@@ -217,13 +217,10 @@ def _maybe_fallback(ufunc: np.ufunc, method: str, *inputs: Any, **kwargs: Any):
             # converted to array for fallback behaviour
             new_inputs = []
             for x in inputs:
-                if x is first_frame:
+                if x is first_frame or not isinstance(x, NDFrame):
                     new_inputs.append(x)
-                elif isinstance(x, NDFrame):
-                    new_inputs.append(np.asarray(x))
                 else:
-                    new_inputs.append(x)
-
+                    new_inputs.append(np.asarray(x))
             # call the ufunc on those transformed inputs
             return getattr(ufunc, method)(*new_inputs, **kwargs)
 

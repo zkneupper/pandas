@@ -205,8 +205,8 @@ class MultiIndexing:
         self.s = Series(np.random.randn(1000000), index=mi)
         self.df = DataFrame(self.s)
 
-        n = 100000
         with warnings.catch_warnings(record=True):
+            n = 100000
             self.mdt = DataFrame(
                 {
                     "A": np.random.choice(range(10000, 45000, 1000), n),
@@ -227,8 +227,7 @@ class MultiIndexing:
 class IntervalIndexing:
     def setup_cache(self):
         idx = IntervalIndex.from_breaks(np.arange(1000001))
-        monotonic = Series(np.arange(1000000), index=idx)
-        return monotonic
+        return Series(np.arange(1000000), index=idx)
 
     def time_getitem_scalar(self, monotonic):
         monotonic[80000]
@@ -305,8 +304,7 @@ class CategoricalIndexIndexing:
 
 class MethodLookup:
     def setup_cache(self):
-        s = Series()
-        return s
+        return Series()
 
     def time_lookup_iloc(self, s):
         s.iloc

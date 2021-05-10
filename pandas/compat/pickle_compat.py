@@ -265,10 +265,7 @@ def load(fh, encoding: str | None = None, is_verbose: bool = False):
     """
     try:
         fh.seek(0)
-        if encoding is not None:
-            up = Unpickler(fh, encoding=encoding)
-        else:
-            up = Unpickler(fh)
+        up = Unpickler(fh) if encoding is None else Unpickler(fh, encoding=encoding)
         up.is_verbose = is_verbose
 
         return up.load()

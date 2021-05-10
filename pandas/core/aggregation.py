@@ -355,7 +355,7 @@ def relabel_result(
         # it based on the whole user-provided names.
         s.index = reordered_indexes[idx : idx + len(fun)]
         reordered_result_in_dict[col] = s.reindex(columns, copy=False)
-        idx = idx + len(fun)
+        idx += len(fun)
     return reordered_result_in_dict
 
 
