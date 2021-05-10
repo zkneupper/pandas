@@ -132,8 +132,8 @@ def is_bool_indexer(key: Any) -> bool:
             key = np.asarray(key)
 
             if not lib.is_bool_array(key):
-                na_msg = "Cannot mask with non-boolean array containing NA / NaN values"
                 if lib.infer_dtype(key) == "boolean" and isna(key).any():
+                    na_msg = "Cannot mask with non-boolean array containing NA / NaN values"
                     # Don't raise on e.g. ["A", "B", np.nan], see
                     #  test_loc_getitem_list_of_labels_categoricalindex_with_na
                     raise ValueError(na_msg)
@@ -459,15 +459,15 @@ def pipe(
     -------
     object : the return type of ``func``.
     """
-    if isinstance(func, tuple):
-        func, target = func
-        if target in kwargs:
-            msg = f"{target} is both the pipe target and a keyword argument"
-            raise ValueError(msg)
-        kwargs[target] = obj
-        return func(*args, **kwargs)
-    else:
+    if not isinstance(func, tuple):
         return func(obj, *args, **kwargs)
+
+    func, target = func
+    if target in kwargs:
+        msg = f"{target} is both the pipe target and a keyword argument"
+        raise ValueError(msg)
+    kwargs[target] = obj
+    return func(*args, **kwargs)
 
 
 def get_rename_function(mapper):

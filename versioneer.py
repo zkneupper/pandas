@@ -956,21 +956,20 @@ def git_get_keywords(versionfile_abs):
     # _version.py.
     keywords = {}
     try:
-        f = open(versionfile_abs)
-        for line in f.readlines():
-            if line.strip().startswith("git_refnames ="):
-                mo = re.search(r'=\s*"(.*)"', line)
-                if mo:
-                    keywords["refnames"] = mo.group(1)
-            if line.strip().startswith("git_full ="):
-                mo = re.search(r'=\s*"(.*)"', line)
-                if mo:
-                    keywords["full"] = mo.group(1)
-            if line.strip().startswith("git_date ="):
-                mo = re.search(r'=\s*"(.*)"', line)
-                if mo:
-                    keywords["date"] = mo.group(1)
-        f.close()
+        with open(versionfile_abs) as f:
+            for line in f.readlines():
+                if line.strip().startswith("git_refnames ="):
+                    mo = re.search(r'=\s*"(.*)"', line)
+                    if mo:
+                        keywords["refnames"] = mo.group(1)
+                if line.strip().startswith("git_full ="):
+                    mo = re.search(r'=\s*"(.*)"', line)
+                    if mo:
+                        keywords["full"] = mo.group(1)
+                if line.strip().startswith("git_date ="):
+                    mo = re.search(r'=\s*"(.*)"', line)
+                    if mo:
+                        keywords["date"] = mo.group(1)
     except OSError:
         pass
     return keywords
@@ -1168,18 +1167,18 @@ def do_vcs_install(manifest_in, versionfile_source, ipy):
     files.append(versioneer_file)
     present = False
     try:
-        f = open(".gitattributes")
-        for line in f.readlines():
-            if line.strip().startswith(versionfile_source):
-                if "export-subst" in line.strip().split()[1:]:
+        with open(".gitattributes") as f:
+            for line in f.readlines():
+                if (
+                    line.strip().startswith(versionfile_source)
+                    and "export-subst" in line.strip().split()[1:]
+                ):
                     present = True
-        f.close()
     except OSError:
         pass
     if not present:
-        f = open(".gitattributes", "a+")
-        f.write("%s export-subst\n" % versionfile_source)
-        f.close()
+        with open(".gitattributes", "a+") as f:
+            f.write("%s export-subst\n" % versionfile_source)
         files.append(".gitattributes")
     run_command(GITS, ["add", "--"] + files)
 
@@ -1193,7 +1192,7 @@ def versions_from_parentdir(parentdir_prefix, root, verbose):
     """
     rootdirs = []
 
-    for i in range(3):
+    for _ in range(3):
         dirname = os.path.basename(root)
         if dirname.startswith(parentdir_prefix):
             return {
@@ -1203,9 +1202,8 @@ def versions_from_parentdir(parentdir_prefix, root, verbose):
                 "error": None,
                 "date": None,
             }
-        else:
-            rootdirs.append(root)
-            root = os.path.dirname(root)  # up a level
+        rootdirs.append(root)
+        root = os.path.dirname(root)  # up a level
 
     if verbose:
         print(
@@ -1283,13 +1281,11 @@ def render_pep440(pieces):
         if pieces["distance"] or pieces["dirty"]:
             rendered += plus_or_dot(pieces)
             rendered += "%d.g%s" % (pieces["distance"], pieces["short"])
-            if pieces["dirty"]:
-                rendered += ".dirty"
     else:
         # exception #1
         rendered = "0+untagged.%d.g%s" % (pieces["distance"], pieces["short"])
-        if pieces["dirty"]:
-            rendered += ".dirty"
+    if pieces["dirty"]:
+        rendered += ".dirty"
     return rendered
 
 
@@ -1348,13 +1344,11 @@ def render_pep440_old(pieces):
         rendered = pieces["closest-tag"]
         if pieces["distance"] or pieces["dirty"]:
             rendered += ".post%d" % pieces["distance"]
-            if pieces["dirty"]:
-                rendered += ".dev0"
     else:
         # exception #1
         rendered = "0.post%d" % pieces["distance"]
-        if pieces["dirty"]:
-            rendered += ".dev0"
+    if pieces["dirty"]:
+        rendered += ".dev0"
     return rendered
 
 

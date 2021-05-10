@@ -1504,13 +1504,12 @@ def take(
     if allow_fill:
         # Pandas style, -1 means NA
         validate_indices(indices, arr.shape[axis])
-        result = take_nd(
+        return take_nd(
             arr, indices, axis=axis, allow_fill=True, fill_value=fill_value
         )
     else:
         # NumPy style
-        result = arr.take(indices, axis=axis)
-    return result
+        return arr.take(indices, axis=axis)
 
 
 # ------------ #
@@ -1583,10 +1582,7 @@ def searchsorted(arr, value, side="left", sorter=None) -> np.ndarray:
         else:
             dtype = value_arr.dtype
 
-        if is_scalar(value):
-            value = dtype.type(value)
-        else:
-            value = pd_array(value, dtype=dtype)
+        value = dtype.type(value) if is_scalar(value) else pd_array(value, dtype=dtype)
     elif not (
         is_object_dtype(arr) or is_numeric_dtype(arr) or is_categorical_dtype(arr)
     ):
@@ -1629,11 +1625,7 @@ def diff(arr, n: int, axis: int = 0, stacklevel: int = 3):
     dtype = arr.dtype
 
     is_bool = is_bool_dtype(dtype)
-    if is_bool:
-        op = operator.xor
-    else:
-        op = operator.sub
-
+    op = operator.xor if is_bool else operator.sub
     if isinstance(dtype, PandasDtype):
         # PandasArray cannot necessarily hold shifted versions of itself.
         arr = arr.to_numpy()
@@ -1671,11 +1663,7 @@ def diff(arr, n: int, axis: int = 0, stacklevel: int = 3):
 
         # int8, int16 are incompatible with float64,
         # see https://github.com/cython/cython/issues/2646
-        if arr.dtype.name in ["int8", "int16"]:
-            dtype = np.float32
-        else:
-            dtype = np.float64
-
+        dtype = np.float32 if arr.dtype.name in ["int8", "int16"] else np.float64
     orig_ndim = arr.ndim
     if orig_ndim == 1:
         # reshape so we can always use algos.diff_2d
@@ -1815,7 +1803,7 @@ def safe_sort(
         )
     codes = ensure_platform_int(np.asarray(codes))
 
-    if not assume_unique and not len(unique(values)) == len(values):
+    if not assume_unique and len(unique(values)) != len(values):
         raise ValueError("values should be unique if codes is not None")
 
     if sorter is None:
@@ -1829,10 +1817,7 @@ def safe_sort(
         # take_nd is faster, but only works for na_sentinels of -1
         order2 = sorter.argsort()
         new_codes = take_nd(order2, codes, fill_value=-1)
-        if verify:
-            mask = (codes < -len(values)) | (codes >= len(values))
-        else:
-            mask = None
+        mask = (codes < -len(values)) | (codes >= len(values)) if verify else None
     else:
         reverse_indexer = np.empty(len(sorter), dtype=np.int_)
         reverse_indexer.put(sorter, np.arange(len(sorter)))

@@ -157,7 +157,7 @@ def _describe_option(pat: str = "", _print_desc: bool = True):
     if len(keys) == 0:
         raise OptionError("No such keys(s)")
 
-    s = "\n".join([_build_option_description(k) for k in keys])
+    s = "\n".join(_build_option_description(k) for k in keys)
 
     if _print_desc:
         print(s)
@@ -810,15 +810,13 @@ def is_one_of_factory(legal_values) -> Callable[[Any], None]:
     legal_values = [c for c in legal_values if not callable(c)]
 
     def inner(x) -> None:
-        if x not in legal_values:
-
-            if not any(c(x) for c in callables):
-                uvals = [str(lval) for lval in legal_values]
-                pp_values = "|".join(uvals)
-                msg = f"Value must be one of {pp_values}"
-                if len(callables):
-                    msg += " or a callable"
-                raise ValueError(msg)
+        if x not in legal_values and not any(c(x) for c in callables):
+            uvals = [str(lval) for lval in legal_values]
+            pp_values = "|".join(uvals)
+            msg = f"Value must be one of {pp_values}"
+            if len(callables):
+                msg += " or a callable"
+            raise ValueError(msg)
 
     return inner
 
@@ -837,12 +835,8 @@ def is_nonnegative_int(value: int | None) -> None:
     ValueError
         When the value is not None or is a negative integer
     """
-    if value is None:
+    if isinstance(value, int) and value >= 0 or value is None:
         return
-
-    elif isinstance(value, int):
-        if value >= 0:
-            return
 
     msg = "Value must be a nonnegative integer or None"
     raise ValueError(msg)

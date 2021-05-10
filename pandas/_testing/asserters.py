@@ -495,9 +495,8 @@ def assert_attr_equal(attr: str, left, right, obj: str = "Attributes"):
 
     if result:
         return True
-    else:
-        msg = f'Attribute "{attr}" are different'
-        raise_assert_detail(obj, msg, left_attr, right_attr)
+    msg = f'Attribute "{attr}" are different'
+    raise_assert_detail(obj, msg, left_attr, right_attr)
 
 
 def assert_is_valid_plot_return_object(objs):

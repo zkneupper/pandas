@@ -102,8 +102,7 @@ class ToCSVIndexes(BaseIO):
         data_cols = {
             f"col{i}": np.random.uniform(0, 100000.0, rows) for i in range(cols)
         }
-        df = DataFrame({**index_cols, **data_cols})
-        return df
+        return DataFrame({**index_cols, **data_cols})
 
     def setup(self):
         ROWS = 100000
